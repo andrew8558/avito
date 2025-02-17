@@ -16,12 +16,7 @@ type Database struct {
 type DBops interface {
 	GetPool(_ context.Context) *pgxpool.Pool
 	BeginTx(ctx context.Context, options *pgx.TxOptions) (pgx.Tx, error)
-}
-
-type DbTx interface {
-	Exec(ctx context.Context, sql string, arguments ...interface{}) (commandTag pgconn.CommandTag, err error)
-	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Exec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error)
 }
 
 func newDatabase(cluster *pgxpool.Pool) *Database {
@@ -34,4 +29,8 @@ func (db Database) GetPool(_ context.Context) *pgxpool.Pool {
 
 func (db Database) BeginTx(ctx context.Context, options *pgx.TxOptions) (pgx.Tx, error) {
 	return db.cluster.BeginTx(ctx, *options)
+}
+
+func (db Database) Exec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
+	return db.cluster.Exec(ctx, query, args...)
 }
